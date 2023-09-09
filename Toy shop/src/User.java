@@ -21,7 +21,7 @@ public class User {
     public String getName() {
         return name;
     }
-    public void showBasket(Toys toys, ArrayList<SizeCost> arrsizes, ArrayList<MaterialCost> arrmaterials) {
+    public void showBasket(ArrayList<Toy> arrtoys, ArrayList<SizeCost> arrsizes, ArrayList<MaterialCost> arrmaterials) {
         int i = 0;
         if(arrbasket.size() == 0) System.out.println("\tкорзина пуста");
         for (BasketItem item : arrbasket) {
@@ -29,8 +29,9 @@ public class User {
             int id_size = item.getIdSize();
             int id_material = item.getIdMaterial();
 
-            String name = toys.getToyName(id_toy);
-            int cost = toys.getToyCost(id_toy);
+            String name = arrtoys.get(id_toy).getName();
+            int cost = arrtoys.get(id_toy).getCost();
+
             double increase = arrsizes.get(id_size).getCost() * arrmaterials.get(id_material).getCost();
             System.out.println("\t" + i++ + ". " + name + ", " + arrsizes.get(id_size).getSize() + ", " + arrmaterials.get(id_material).getMaterial() + ", " + Math.round(cost*increase * 10.0)/10.0 + "$");
         }

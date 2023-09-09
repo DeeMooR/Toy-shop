@@ -4,18 +4,22 @@ import java.util.Scanner;
 public class Main {
     public static void main(String[] args) {
         Scanner scan = new Scanner(System.in);
-        int k, exit, num, num2, num3, i, length;
+        int k, exit, num, num2, num3, i, length, userId = 0;
         String str;
         Boolean bool;
 
         Check check = new Check();
-        Toys toys = new Toys();
-        Users users = new Users();
+        ArrayList<User> arrusers = new ArrayList<>();
+        ArrayList<Toy> arrtoys = new ArrayList<>();
 
-        toys.setToy("Мяч", 12);
-        toys.setToy("Кукла", 24);
-        toys.setToy("Самолёт", 36);
-        toys.setToy("Машина", 48);
+        Toy toy = new Toy(0, "Мяч", 12);
+        arrtoys.add(toy);
+        toy = new Toy(1, "Кукла", 24);
+        arrtoys.add(toy);
+        toy = new Toy(2, "Самолёт", 36);
+        arrtoys.add(toy);
+        toy = new Toy(3, "Машина", 48);
+        arrtoys.add(toy);
 
         ArrayList<SizeCost> arrsizes = new ArrayList<>();
         arrsizes.add(new SizeCost("S", 1.0));
@@ -41,31 +45,40 @@ public class Main {
                         switch (k) {
                             case 1:
                                 System.out.println("Все пользователи: ");
-                                users.showUsers(toys, arrsizes, arrmaterials);
+                                if(arrusers.size() == 0) System.out.println("пусто");
+                                for (User user : arrusers) {
+                                    System.out.println(user.getId() + ". " + user.getName());
+                                    arrusers.get(user.getId()).showBasket(arrtoys, arrsizes, arrmaterials);
+                                }
                                 break;
                             case 2:
                                 System.out.println("Все игрушки: ");
-                                toys.showToys();
+                                showToys(arrtoys);
                                 break;
                             case 3:
                                 System.out.println("Введите название игрушки: ");
                                 str = scan.nextLine();
-                                bool = toys.checkToyName(str);
+                                bool = true;
+                                for (Toy item : arrtoys) {
+                                    if (str.equals(item.getName())) bool = false;
+                                }
                                 if (bool) {
                                     System.out.println("Введите стоимость игрушки: ");
                                     num = check.checkInt();
-                                    toys.setToy(str, num);
+                                    int id = arrtoys.size();
+                                    toy = new Toy(id, str, num);
+                                    arrtoys.add(toy);
                                 } else {
                                     System.err.println("Такая игрушка уже добавлена.");
                                 }
                                 break;
                             case 4:
                                 System.out.println("Выберите какую игрушку удалить: ");
-                                toys.showToys();
-                                length = toys.getToysLength();
+                                showToys(arrtoys);
+                                length = arrtoys.size();
                                 num = check.checkNumber(length - 1);
                                 // Удалять и у пользователей
-                                toys.deleteToy(num);
+                                arrtoys.remove(num);
                                 // Сообщение об успешном удалении
                                 break;
                             case 5:
@@ -83,24 +96,32 @@ public class Main {
                 case 2:
                     System.out.println("Введите логин: ");
                     str = check.checkString();
-                    bool = users.checkUserName(str);
+                    bool = true;
+                    for (User item : arrusers) {
+                        if (str.equals(item.getName())) bool = false;
+                    }
                     if (bool) {
-                        users.setUser(str);
+                        int id = arrusers.size();
+                        User user = new User(id, str);
+                        arrusers.add(user);
                         System.out.println("Пользователь зарегистирован.");
                     }
-                    int userId = users.getUserId(str);
+                    for (User user : arrusers) {
+                        if (str.equals(user.getName())) userId = user.getId();
+                    }
+
                     while (true) {
-                        System.out.println("User: " + users.getUserName(userId) + "\n\t1 - Корзина \n\t2 - Добавить игрушку в корзину \n\t3 - Удалить игрушку из корзины \n\t4 - Очистить корзину \n\t0 - Выход в меню");
+                        System.out.println("User: " + arrusers.get(userId).getName() + "\n\t1 - Корзина \n\t2 - Добавить игрушку в корзину \n\t3 - Удалить игрушку из корзины \n\t4 - Очистить корзину \n\t0 - Выход в меню");
                         k = check.checkNumber(4);
                         switch (k) {
                             case 1:
                                 System.out.println("Корзина");
-                                users.showUserBasket(toys, userId, arrsizes, arrmaterials);
+                                arrusers.get(userId).showBasket(arrtoys, arrsizes, arrmaterials);
                                 break;
                             case 2:
                                 System.out.println("Выберите игрушку: ");
-                                toys.showToys();
-                                length = toys.getToysLength();
+                                showToys(arrtoys);
+                                length = arrtoys.size();
                                 num = check.checkNumber(length - 1);
 
                                 System.out.println("Выберите размер игрушки: ");
@@ -119,17 +140,21 @@ public class Main {
                                 length = arrmaterials.size();
                                 num3 = check.checkNumber(length - 1);
 
-                                users.setUserBasket(userId, num, num2, num3);
+                                arrusers.get(userId).setBasket(num, num2, num3);
                                 break;
                             case 3:
-                                System.out.println("Выберите какую игрушку удалить: ");
-                                users.showUserBasket(toys, userId, arrsizes, arrmaterials);
-                                length = users.getUserBasketLength(userId);
-                                num = check.checkNumber(length - 1);
-                                users.deleteUserBasketElement(userId, num);
+                                if(arrusers.get(userId).getBasketLength() == 0) {
+                                    System.out.println("корзина пуста");
+                                } else {
+                                    System.out.println("Выберите какую игрушку удалить: ");
+                                    arrusers.get(userId).showBasket(arrtoys, arrsizes, arrmaterials);
+                                    length = arrusers.get(userId).getBasketLength();
+                                    num = check.checkNumber(length - 1);
+                                    arrusers.get(userId).deleteBasketElement(num);
+                                }
                                 break;
                             case 4:
-                                users.deleteUserBasket(userId);
+                                arrusers.get(userId).deleteBasket();
                                 break;
                             case 0: exit = 1;
                                 break;
@@ -139,6 +164,13 @@ public class Main {
                     break;
                 case 0: return;
             }
+        }
+    }
+
+    public static void showToys(ArrayList<Toy> arrtoys) {
+        if(arrtoys.size() == 0) System.out.println("пусто");
+        for (Toy toy : arrtoys) {
+            System.out.println(toy.getId() + ". " + toy.getName() + " - " + toy.getCost() + "$");
         }
     }
 }
