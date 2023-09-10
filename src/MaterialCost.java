@@ -1,4 +1,6 @@
-public class MaterialCost {
+import java.io.Serializable;
+
+public class MaterialCost implements Serializable {
     private String material;
     private double cost;
 

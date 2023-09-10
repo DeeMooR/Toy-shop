@@ -1,4 +1,6 @@
-public class SizeCost {
+import java.io.Serializable;
+
+public class SizeCost implements Serializable {
     private String size;
     private double cost;
 

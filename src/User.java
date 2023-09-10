@@ -1,6 +1,7 @@
 import java.util.ArrayList;
+import java.io.Serializable;
 
-public class User {
+public class User implements Serializable {
     private int id;
     private String name;
     private ArrayList<BasketItem> arrbasket = new ArrayList<>();
@@ -61,13 +62,10 @@ public class User {
     public void deleteBasketName(int id_toy) {
         ArrayList<Integer> arrNumDelete = new ArrayList<>();
         for (int i = arrbasket.size() - 1; i >= 0; i--) {
-            System.out.println("for1: " + i);
             if(id_toy == arrbasket.get(i).getIdToy()) arrNumDelete.add(i);
         }
         for (Integer i : arrNumDelete) {
-            System.out.println("for2: " + i + ", old length: " + arrbasket.size());
             arrbasket.remove(i.intValue());
-            System.out.println("new length: " + arrbasket.size());
         }
     }
 }
