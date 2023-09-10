@@ -2,14 +2,14 @@ import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class Check {
-    public static int checkNumber(int max) {
+    public static int checkNumber(int min, int max) {
         Scanner scan = new Scanner(System.in);
         int a;
         while (true) {
             try {
                 a = scan.nextInt();
                 scan.nextLine();
-                if (a < 0 || a > max) {
+                if (a < min || a > max) {
                     throw new MyException("Такого варианта нет.");
                 }
                 break;

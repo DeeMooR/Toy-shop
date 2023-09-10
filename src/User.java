@@ -37,6 +37,13 @@ public class User {
         }
     }
 
+    public boolean checkBasketName(int id_toy) {
+        for (BasketItem item : arrbasket) {
+            if(id_toy == item.getIdToy()) return true;
+        }
+        return false;
+    }
+
     public int getBasketLength() {
         return arrbasket.size();
     }
@@ -45,5 +52,10 @@ public class User {
     }
     public void deleteBasketElement(int num) {
         arrbasket.remove(num);
+    }
+    public void deleteBasketName(int id_toy) {
+        for (BasketItem item : arrbasket) {
+            if(id_toy == item.getIdToy()) arrbasket.remove(item);
+        }
     }
 }
