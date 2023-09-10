@@ -5,7 +5,8 @@ import java.util.Scanner;
 public class Main {
     public static void main(String[] args) {
         Scanner scan = new Scanner(System.in);
-        int k, exit, num, num2, num3, p, length, userId = 0;
+        int k, exit, num, num2, num3, length, userId = -1;
+        int[] q = {0};
         String str;
         Boolean bool, isSave = true;
 
@@ -41,18 +42,15 @@ public class Main {
                             case 3:
                                 isSave = false;
                                 System.out.println("Введите название игрушки: ");
-                                str = scan.nextLine();
-                                bool = true;
-                                for (Toy item : arrtoys) {
-                                    if (str.equals(item.getName())) bool = false;
-                                }
-                                if (bool) {
+                                String fStr = scan.nextLine();
+                                bool = arrtoys.stream().anyMatch(item -> fStr.equals(item.getName()));
+                                if (!bool) {
                                     System.out.println("Введите стоимость игрушки: ");
                                     num = check.checkInt();
                                     int id;
                                     if (arrtoys.size() > 0) id = arrtoys.get(arrtoys.size() - 1).getId() + 1;
                                     else id = 0;
-                                    Toy toy = new Toy(id, str, num);
+                                    Toy toy = new Toy(id, fStr, num);
                                     arrtoys.add(toy);
                                     System.out.println("Игрушка успешно добавлена.");
                                 } else {
@@ -96,14 +94,12 @@ public class Main {
                                 }
                                 arrusers = FileToArr("users.txt", User.class);
                                 arrtoys = FileToArr("toys.txt", Toy.class);
-                                System.out.println("Данные из файла загружены.");
                                 // Нельзя сделать добавление данных из файла к текущим, так как нарушаются id товаров
                                 break;
                             case 6:
                                 isSave = true;
                                 ArrToFile(arrusers, "users.txt");
                                 ArrToFile(arrtoys, "toys.txt");
-                                System.out.println("Данные успещно сохранены.");
                                 break;
                             case 0: exit = 1;
                                 break;
@@ -113,23 +109,21 @@ public class Main {
                     break;
                 case 2:
                     System.out.println("Введите логин: ");
-                    str = check.checkString();
-                    bool = true;
-                    for (User item : arrusers) {
-                        if (str.equals(item.getName())) bool = false;
-                    }
-                    if (bool) {
+                    String fStr = check.checkString();
+                    bool = arrusers.stream().anyMatch(item -> fStr.equals(item.getName()));
+                    if (!bool) {
                         isSave = false;
                         int id;
                         if (arrusers.size() > 0) id = arrusers.get(arrusers.size() - 1).getId() + 1;
                         else id = 0;
-                        User user = new User(id, str);
+                        User user = new User(id, fStr);
                         arrusers.add(user);
                         System.out.println("Пользователь зарегистирован.");
                     }
                     for (User item : arrusers) {
-                        if (str.equals(item.getName())) userId = item.getId();
+                        if (fStr.equals(item.getName())) userId = item.getId();
                     }
+
 
                     while (true) {
                         System.out.println("User: " + arrusers.get(userId).getName() + "\n\t1 - Корзина \n\t2 - Добавить игрушку в корзину \n\t3 - Удалить игрушку из корзины \n\t4 - Очистить корзину \n\t0 - Выход в меню");
@@ -138,6 +132,9 @@ public class Main {
                             case 1:
                                 System.out.println("Корзина");
                                 arrusers.get(userId).showBasket(arrtoys, arrsizes, arrmaterials);
+
+//                                arrusers.get(userId).totalCost(arrtoys, arrsizes, arrmaterials);
+//                                System.out.println("Итого: " + totalCost + "$");
                                 break;
                             case 2:
                                 isSave = false;
@@ -147,18 +144,18 @@ public class Main {
                                 num = check.checkNumber(0, length - 1);
 
                                 System.out.println("Выберите размер игрушки: ");
-                                p = 0;
-                                for (SizeCost item : arrsizes) {
-                                    System.out.println(p++ + ". " + item.getSize() + "  x" + item.getCost() + "$");
-                                }
+                                q[0] = 0;
+                                arrsizes.forEach(item -> {
+                                    System.out.println((q[0]++) + ". " + item.getSize() + "  x" + item.getCost() + "$");
+                                });
                                 length = arrsizes.size();
                                 num2 = check.checkNumber(0, length - 1);
 
                                 System.out.println("Выберите материал игрушки: ");
-                                p = 0;
-                                for (MaterialCost item : arrmaterials) {
-                                    System.out.println(p++ + ". " + item.getMaterial() + "  x" + item.getCost() + "$");
-                                }
+                                q[0] = 0;
+                                arrmaterials.forEach(item -> {
+                                    System.out.println((q[0]++) + ". " + item.getMaterial() + "  x" + item.getCost() + "$");
+                                });
                                 length = arrmaterials.size();
                                 num3 = check.checkNumber(0, length - 1);
 
@@ -201,7 +198,7 @@ public class Main {
                         if (num == 1) {
                             ArrToFile(arrusers, "users.txt");
                             ArrToFile(arrtoys, "toys.txt");
-                            System.out.println("Данные успещно сохранены.");
+                            System.out.println("Данные успешно сохранены.");
                         }
                     }
                     return;
@@ -212,10 +209,10 @@ public class Main {
 
     public static void showToys(ArrayList<Toy> arrtoys) {
         if(arrtoys.size() == 0) System.out.println("пусто");
-        int i = 0;
-        for (Toy item : arrtoys) {
-            System.out.println(i++ + ". " + item.getName() + " - " + item.getCost() + "$");
-        }
+        int[] q = {0};
+        arrtoys.forEach (item -> {
+            System.out.println(q[0]++ + ". " + item.getName() + " - " + item.getCost() + "$");
+        });
     }
 
     public static <T> ArrayList<T> FileToArr(String file, Class<T> cl) {
@@ -226,6 +223,7 @@ public class Main {
             newarr = (ArrayList<T>) ois.readObject();
             ois.close();
             fis.close();
+            if (file != "sizes.txt" && file != "materials.txt") System.out.println("Данные из файла загружены.");
         } catch (IOException | ClassNotFoundException e) {
             System.err.println("Ошибка: " + e.getMessage());
         }
@@ -238,6 +236,7 @@ public class Main {
             oos.writeObject(arr);
             oos.close();
             fos.close();
+            System.out.println("Данные успешно сохранены.");
         } catch (IOException e) {
             System.err.println("Ошибка: " + e.getMessage());
         }
