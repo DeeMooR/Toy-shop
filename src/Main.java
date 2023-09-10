@@ -65,7 +65,9 @@ public class Main {
                                 if (bool) {
                                     System.out.println("Введите стоимость игрушки: ");
                                     num = check.checkInt();
-                                    int id = arrtoys.size();
+                                    int id;
+                                    if (arrtoys.size() > 0) id = arrtoys.get(arrtoys.size() - 1).getId() + 1;
+                                    else id = 0;
                                     toy = new Toy(id, str, num);
                                     arrtoys.add(toy);
                                     System.out.println("Игрушка успешно добавлена.");
@@ -81,13 +83,13 @@ public class Main {
                                 bool = false;
 
                                 for (User item: arrusers) {
-                                    bool = item.checkBasketName(num);
+                                    bool = item.checkBasketName(arrtoys.get(num).getId());
                                     if (bool) {
-                                        System.out.println("Данная игрушка лежит в корзине пользователя. \nВсё равно удалить игрушку? \n\t1. - Да \n\t2. - Отмена");
+                                        System.out.println("Данная игрушка лежит в корзине пользователя. \nВсё равно удалить игрушку? \n\t1. Да \n\t2. Отмена");
                                         num2 = check.checkNumber(1, 2);
                                         if (num2 == 1) {
                                             for (User item2: arrusers) {
-                                                item2.deleteBasketName(num);
+                                                item2.deleteBasketName(arrtoys.get(num).getId());
                                             }
                                             arrtoys.remove(num);
                                             System.out.println("Игрушка удалена из общего списка и корзин пользователей.");
@@ -121,7 +123,9 @@ public class Main {
                         if (str.equals(item.getName())) bool = false;
                     }
                     if (bool) {
-                        int id = arrusers.size();
+                        int id;
+                        if (arrusers.size() > 0) id = arrusers.get(arrusers.size() - 1).getId() + 1;
+                        else id = 0;
                         User user = new User(id, str);
                         arrusers.add(user);
                         System.out.println("Пользователь зарегистирован.");
@@ -160,7 +164,8 @@ public class Main {
                                 length = arrmaterials.size();
                                 num3 = check.checkNumber(0, length - 1);
 
-                                arrusers.get(userId).setBasket(num, num2, num3);
+                                int id_toy = arrtoys.get(num).getId();
+                                arrusers.get(userId).setBasket(id_toy, num2, num3);
                                 System.out.println("Игрушка была добавлена в корзину.");
                                 break;
                             case 3:
@@ -176,8 +181,12 @@ public class Main {
                                 }
                                 break;
                             case 4:
-                                arrusers.get(userId).deleteBasket();
-                                System.out.println("Корзина очищена.");
+                                if(arrusers.get(userId).getBasketLength() == 0) {
+                                    System.out.println("корзина пуста");
+                                } else {
+                                    arrusers.get(userId).deleteBasket();
+                                    System.out.println("Корзина очищена.");
+                                }
                                 break;
                             case 0: exit = 1;
                                 break;
@@ -192,8 +201,9 @@ public class Main {
 
     public static void showToys(ArrayList<Toy> arrtoys) {
         if(arrtoys.size() == 0) System.out.println("пусто");
+        int i = 0;
         for (Toy item : arrtoys) {
-            System.out.println(item.getId() + ". " + item.getName() + " - " + item.getCost() + "$");
+            System.out.println(i++ + ". " + item.getName() + " - " + item.getCost() + "$");
         }
     }
 }

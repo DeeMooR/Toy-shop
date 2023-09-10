@@ -29,9 +29,14 @@ public class User {
             int id_size = item.getIdSize();
             int id_material = item.getIdMaterial();
 
-            String name = arrtoys.get(id_toy).getName();
-            int cost = arrtoys.get(id_toy).getCost();
-
+            String name = "ошибка";
+            int cost = 0;
+            for (Toy item2: arrtoys) {
+                if (id_toy == item2.getId()) {
+                    name = item2.getName();
+                    cost = item2.getCost();
+                }
+            }
             double increase = arrsizes.get(id_size).getCost() * arrmaterials.get(id_material).getCost();
             System.out.println("\t" + i++ + ". " + name + ", " + arrsizes.get(id_size).getSize() + ", " + arrmaterials.get(id_material).getMaterial() + ", " + Math.round(cost*increase * 10.0)/10.0 + "$");
         }
@@ -54,8 +59,15 @@ public class User {
         arrbasket.remove(num);
     }
     public void deleteBasketName(int id_toy) {
-        for (BasketItem item : arrbasket) {
-            if(id_toy == item.getIdToy()) arrbasket.remove(item);
+        ArrayList<Integer> arrNumDelete = new ArrayList<>();
+        for (int i = arrbasket.size() - 1; i >= 0; i--) {
+            System.out.println("for1: " + i);
+            if(id_toy == arrbasket.get(i).getIdToy()) arrNumDelete.add(i);
+        }
+        for (Integer i : arrNumDelete) {
+            System.out.println("for2: " + i + ", old length: " + arrbasket.size());
+            arrbasket.remove(i.intValue());
+            System.out.println("new length: " + arrbasket.size());
         }
     }
 }
