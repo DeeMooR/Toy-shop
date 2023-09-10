@@ -1,8 +1,7 @@
+import org.w3c.dom.ls.LSOutput;
+
 import java.util.ArrayList;
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 public class User implements Serializable {
     private int id;
@@ -29,7 +28,6 @@ public class User implements Serializable {
     public void showBasket(ArrayList<Toy> arrtoys, ArrayList<SizeCost> arrsizes, ArrayList<MaterialCost> arrmaterials) {
         int i = 0;
         if(arrbasket.size() == 0) System.out.println("\tкорзина пуста");
-
         for (BasketItem item : arrbasket) {
             int id_toy = item.getIdToy();
             int id_size = item.getIdSize();
@@ -75,38 +73,31 @@ public class User implements Serializable {
         arrbasket.removeAll(itemsDelete);
     }
 
-//    public double totalCost(ArrayList<Toy> arrtoys, ArrayList<SizeCost> arrsizes, ArrayList<MaterialCost> arrmaterials) {
-//        double totalCost = arrbasket.stream().mapToDouble(item -> {
-//            int id_toy = item.getIdToy();
-//            double increase = arrsizes.get(item.getIdSize()).getCost() * arrmaterials.get(item.getIdMaterial()).getCost();
-//            int cost = 0;
-//            for (Toy item2: arrtoys) {
-//                if (id_toy == item2.getId()) cost = item2.getCost();
-//            }
-//            return cost * increase;
-//        }).sum();
-//        return totalCost;
-//    }
+    public void totalCost(ArrayList<Toy> arrtoys, ArrayList<SizeCost> arrsizes, ArrayList<MaterialCost> arrmaterials) {
+        double totalCost = arrbasket.stream().mapToDouble(item -> {
+            int id_toy = item.getIdToy();
+            double increase = arrsizes.get(item.getIdSize()).getCost() * arrmaterials.get(item.getIdMaterial()).getCost();
+            int cost = 0;
+            for (Toy item2: arrtoys) {
+                if (id_toy == item2.getId()) cost = item2.getCost();
+            }
+            return cost * increase;
+        }).sum();
+        System.out.println("\tИтого: " + Math.round(totalCost * 10.0)/10.0 + "$");
+    }
 
-//    public void showBasketSort(ArrayList<Toy> arrtoys, ArrayList<SizeCost> arrsizes, ArrayList<MaterialCost> arrmaterials) {
-//        Map<Integer, Toy> toyMap = new HashMap<>();
-//        for (Toy toy : arrtoys) {
-//            toyMap.put(toy.getId(), toy);
-//        }
-//        arrbasket.sort((left, right) -> {
-//            Toy leftToy = toyMap.get(left.getIdToy());
-//            Toy rightToy = toyMap.get(right.getIdToy());
-//
-//            if (leftToy == null || rightToy == null) {
-//                return 0;
-//            }
-//
-//            int costL = leftToy.getCost();
-//            int costR = rightToy.getCost();
-//            double increaseL = arrsizes.get(left.getIdSize()).getCost() * arrmaterials.get(left.getIdSize()).getCost();
-//            double increaseR = arrsizes.get(right.getIdSize()).getCost() * arrmaterials.get(right.getIdSize()).getCost();
-//
-//            return Double.compare(costL * increaseL, costR * increaseR);
-//        });
-//    }
+    public void showBasketSort(ArrayList<Toy> arrtoys, ArrayList<SizeCost> arrsizes, ArrayList<MaterialCost> arrmaterials) {
+        int i = 0;
+        arrbasket.sort((left, right) -> {
+            int costL = 0, costR = 0;
+            for (Toy item: arrtoys) {
+                if (left.getIdToy() == item.getId()) costL = item.getCost();
+                if (right.getIdToy() == item.getId()) costR = item.getCost();
+            }
+            double increaseL = arrsizes.get(left.getIdSize()).getCost() * arrmaterials.get(left.getIdMaterial()).getCost();
+            double increaseR = arrsizes.get(right.getIdSize()).getCost() * arrmaterials.get(right.getIdMaterial()).getCost();
+            return Double.compare(costL*increaseL, costR*increaseR);
+        });
+        System.out.println("Корзина отсортирована по возрастанию цены.");
+    }
 }
