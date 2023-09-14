@@ -1,6 +1,6 @@
 import java.io.Serializable;
 
-public class MaterialCost implements Serializable {
+public class MaterialCost implements SizeMaterialCost, Serializable {
     private String material;
     private double cost;
 
@@ -9,7 +9,7 @@ public class MaterialCost implements Serializable {
         this.cost = cost;
     }
 
-    public String getMaterial() {
+    public String getName() {
         return material;
     }
     public double getCost() {

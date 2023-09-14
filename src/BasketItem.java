@@ -1,5 +1,4 @@
 import java.io.Serializable;
-import java.util.ArrayList;
 
 public class BasketItem implements Serializable {
     private int id_toy;
