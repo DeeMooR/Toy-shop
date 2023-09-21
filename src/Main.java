@@ -1,12 +1,18 @@
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Random;
 import java.util.Scanner;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Main {
     public static void main(String[] args) {
         Scanner scan = new Scanner(System.in);
+        Random random = new Random();
         int k, exit, num;
         Boolean bool, isSave = true;
+        int[] arrRandom = new int[8];
 
         Admin admin = new Admin();
         ArrayList<User> arrusers = new ArrayList<>();
@@ -18,8 +24,8 @@ public class Main {
 
         while(true) {
             exit = 0;
-            System.out.println("Меню: \n\t1 - Админ \n\t2 - Пользователь \n\t0 - Выход из программы");
-            k = Check.checkNumber(0, 2);
+            System.out.println("Меню: \n\t1 - Админ \n\t2 - Пользователь \n\t3 - Stream API \n\t0 - Выход из программы");
+            k = Check.checkNumber(0, 3);
             switch (k) {
                 case 1:
                     while (true) {
@@ -75,7 +81,7 @@ public class Main {
                     User user = getUserObject(arrusers, fStr);
 
                     while (true) {
-                        System.out.println("User: " + user.getName() + "\n\t1 - Корзина \n\t2 - Отсортировать корзину \n\t3 - Добавить игрушку в корзину \n\t4 - Удалить игрушку из корзины \n\t5 - Очистить корзину \n\t0 - Выход в меню");
+                        System.out.println("User: " + user.getName() + "\n\t1 - Корзина \n\t2 - Взаимодействие с корзиной \n\t3 - Добавить игрушку в корзину \n\t4 - Удалить игрушку из корзины \n\t5 - Очистить корзину \n\t0 - Выход в меню");
                         k = Check.checkNumber(0, 5);
                         switch (k) {
                             case 1:
@@ -83,7 +89,7 @@ public class Main {
                                 user.showBasket(arrtoys, arrsizes, arrmaterials);
                                 break;
                             case 2:
-                                basketSortParallel(user, arrtoys, arrsizes, arrmaterials);
+                                interactingWithBasket(user, arrtoys, arrsizes, arrmaterials);
                                 break;
                             case 3:
                                 isSave = false;
@@ -113,6 +119,19 @@ public class Main {
                         }
                         if (exit == 1) break;
                     }
+                    break;
+                case 3:
+                    System.out.println("Лабораторная работа 3. 'Коллекции. Stream API' \nВариант 17");
+                    for (int i = 0; i < arrRandom.length; i++) {
+                        arrRandom[i] = ((int)(Math.random() * 31) - 15);
+                    }
+                    String stringArr = Arrays.stream(arrRandom).mapToObj(el -> String.valueOf(el)).reduce((acc, el) -> acc + ' ' + el).get();
+                    System.out.println("Изначальный массив: " + stringArr);
+
+                    String[] newArr = Arrays.stream(arrRandom).sorted().filter(el -> el < 0).mapToObj(el -> String.valueOf(el)).toArray(size -> new String[size]);
+
+                    stringArr = Arrays.stream(newArr).reduce((acc, el) -> acc + ' ' + el).get();
+                    System.out.println("Изменённый массив: " + stringArr);
                     break;
                 case 0: {
                     if (!isSave) {
@@ -195,6 +214,42 @@ public class Main {
             thread2.join();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public static void interactingWithBasket(User user, ArrayList<Toy> arrtoys, ArrayList<SizeCost> arrsizes, ArrayList<MaterialCost> arrmaterials) {
+        int k, num;
+        String str;
+        while (true) {
+            if (user.getBasketLength() == 0) {
+                System.out.println("корзина пуста");
+                return;
+            }
+            System.out.println("Корзина: " + "\n\t1 - Отсортировать \n\t2 - Фильтрация \n\t3 - Кол-во товаров \n\t4 - Группировка \n\t5 - Установить лимит вывода \n\t0 - Выход в меню пользователя");
+            k = Check.checkNumber(0, 5);
+            switch (k) {
+                case 1:
+                    basketSortParallel(user, arrtoys, arrsizes, arrmaterials);
+                    break;
+                case 2:
+                    System.out.println("Введите размер игрушки: ");
+                    str = Check.checkStringSize(arrsizes);
+                    user.displayBasketSize(str, arrtoys, arrsizes, arrmaterials);
+                    break;
+                case 3:
+                    int length = user.getBasketLength();
+                    System.out.println("В корзине " + length + " товаров");
+                    break;
+                case 4:
+                    user.displayBasketGrouping(arrtoys, arrsizes, arrmaterials);
+                    break;
+                case 5:
+                    System.out.println("Введите лимит вывода товаров: ");
+                    num = Check.checkIntLimit();
+                    user.displayBasketLimitItem(num, arrtoys, arrsizes, arrmaterials);
+                    break;
+                case 0: return;
+            }
         }
     }
 }

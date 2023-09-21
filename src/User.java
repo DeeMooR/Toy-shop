@@ -1,5 +1,8 @@
 import java.util.ArrayList;
 import java.io.Serializable;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class User extends Person implements Serializable {
     private int id;
@@ -55,26 +58,26 @@ public class User extends Person implements Serializable {
     }
 
     public void showBasket(ArrayList<Toy> arrtoys, ArrayList<SizeCost> arrsizes, ArrayList<MaterialCost> arrmaterials) {
+        int[] index = {0};
         if(arrbasket.size() == 0) {
             System.out.println("\tкорзина пуста");
             return;
         }
-        displayBasket(arrbasket, arrtoys, arrsizes, arrmaterials);
+        totalCost(arrtoys, arrsizes, arrmaterials);
+        arrbasket.stream().forEach(item -> displayBasketOneItem(item, index, arrtoys, arrsizes, arrmaterials));
         totalCost(arrtoys, arrsizes, arrmaterials);
     }
-    public void displayBasket(ArrayList<BasketItem> arr, ArrayList<Toy> arrtoys, ArrayList<SizeCost> arrsizes, ArrayList<MaterialCost> arrmaterials) {
-        int i = 0;
-        for (BasketItem item : arr) {
-            int id_size = item.getIdSize();
-            int id_material = item.getIdMaterial();
+    public void displayBasketOneItem(BasketItem item, int[] i, ArrayList<Toy> arrtoys, ArrayList<SizeCost> arrsizes, ArrayList<MaterialCost> arrmaterials) {
+        int id_size = item.getIdSize();
+        int id_material = item.getIdMaterial();
 
-            int id_toy = getIdToyByIdToyBasket(arrtoys, item.getIdToy());
-            String name = arrtoys.get(id_toy).getName();
-            int cost = arrtoys.get(id_toy).getCost();
+        int id_toy = getIdToyByIdToyBasket(arrtoys, item.getIdToy());
+        String name = arrtoys.get(id_toy).getName();
+        int cost = arrtoys.get(id_toy).getCost();
 
-            double increase = arrsizes.get(id_size).getCost() * arrmaterials.get(id_material).getCost();
-            System.out.println("\t" + i++ + ". " + name + ", " + arrsizes.get(id_size).getName() + ", " + arrmaterials.get(id_material).getName() + ", " + Math.round(cost*increase * 10.0)/10.0 + "$");
-        }
+        double increase = arrsizes.get(id_size).getCost() * arrmaterials.get(id_material).getCost();
+        System.out.println("\t" + i[0] + ". " + name + ", " + arrsizes.get(id_size).getName() + ", " + arrmaterials.get(id_material).getName() + ", " + Math.round(cost*increase * 10.0)/10.0 + "$");
+        i[0]++;
     }
     public int getIdToyByIdToyBasket(ArrayList<Toy> arrtoys, int idToyBasket) {
         try {
@@ -92,19 +95,19 @@ public class User extends Person implements Serializable {
     }
 
     public void showBasketSortIncrease(ArrayList<Toy> arrtoys, ArrayList<SizeCost> arrsizes, ArrayList<MaterialCost> arrmaterials) {
-        ArrayList<BasketItem> sortedBasket = new ArrayList<>(arrbasket);
-        sortedBasket.sort((left, right) -> basketSort(arrtoys, arrsizes, arrmaterials, left, right));
+        int[] index = {0};
+        List<BasketItem> sortedBasket = arrbasket.stream().sorted((left, right) -> basketSort(arrtoys, arrsizes, arrmaterials, left, right)).collect(Collectors.toList());
         synchronized (this) {
             System.out.println("По возрастанию цены:");
-            displayBasket(sortedBasket, arrtoys, arrsizes, arrmaterials);
+            sortedBasket.stream().forEach(item -> displayBasketOneItem(item, index, arrtoys, arrsizes, arrmaterials));
         }
     }
     public void showBasketSortDecrease(ArrayList<Toy> arrtoys, ArrayList<SizeCost> arrsizes, ArrayList<MaterialCost> arrmaterials) {
-        ArrayList<BasketItem> sortedBasket = new ArrayList<>(arrbasket);
-        sortedBasket.sort((left, right) -> basketSort(arrtoys, arrsizes, arrmaterials, right, left));
+        int[] index = {0};
+        List<BasketItem> sortedBasket = arrbasket.stream().sorted((left, right) -> basketSort(arrtoys, arrsizes, arrmaterials, right, left)).collect(Collectors.toList());
         synchronized (this) {
             System.out.println("По убыванию цены:");
-            displayBasket(sortedBasket, arrtoys, arrsizes, arrmaterials);
+            sortedBasket.stream().forEach(item -> displayBasketOneItem(item, index, arrtoys, arrsizes, arrmaterials));
         }
     }
     public int basketSort(ArrayList<Toy> arrtoys, ArrayList<SizeCost> arrsizes, ArrayList<MaterialCost> arrmaterials, BasketItem left, BasketItem right) {
@@ -122,7 +125,7 @@ public class User extends Person implements Serializable {
         return arrbasket.stream().anyMatch(item -> id_toy == item.getIdToy());
     }
     public int getBasketLength() {
-        return arrbasket.size();
+        return (int) arrbasket.stream().count();
     }
     public void deleteBasket() {
         arrbasket.clear();
@@ -151,5 +154,23 @@ public class User extends Person implements Serializable {
             return cost * increase;
         }).sum();
         System.out.println("\tИтого: " + Math.round(totalCost * 10.0)/10.0 + "$");
+    }
+
+    public void displayBasketLimitItem(int num, ArrayList<Toy> arrtoys, ArrayList<SizeCost> arrsizes, ArrayList<MaterialCost> arrmaterials) {
+        int[] index = {0};
+        System.out.println("Первые " + num + " товара в корзине:");
+        arrbasket.stream().limit(num).forEach(item -> displayBasketOneItem(item, index, arrtoys, arrsizes, arrmaterials));
+    }
+    public void displayBasketSize(String str, ArrayList<Toy> arrtoys, ArrayList<SizeCost> arrsizes, ArrayList<MaterialCost> arrmaterials) {
+        int[] index = {0};
+        arrbasket.stream().filter(el -> str.equals(arrsizes.get(el.getIdSize()).getName())).forEach(item -> displayBasketOneItem(item, index, arrtoys, arrsizes, arrmaterials));
+    }
+    public void displayBasketGrouping(ArrayList<Toy> arrtoys, ArrayList<SizeCost> arrsizes, ArrayList<MaterialCost> arrmaterials) {
+        Map<String, List<BasketItem>> map = arrbasket.stream().collect(Collectors.groupingBy(el -> arrsizes.get(el.getIdSize()).getName()));
+        for (Map.Entry<String, List<BasketItem>> entry : map.entrySet()) {
+            int[] i = {0};
+            System.out.println(entry.getKey() + ":");
+            entry.getValue().stream().forEach(el -> displayBasketOneItem(el, i, arrtoys, arrsizes, arrmaterials));
+        }
     }
 }
