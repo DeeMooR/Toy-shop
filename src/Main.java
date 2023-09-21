@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.concurrent.*;
 
 public class Main {
     public static void main(String[] args) {
@@ -10,14 +11,15 @@ public class Main {
         Admin admin = new Admin();
         ArrayList<User> arrusers = new ArrayList<>();
         ArrayList<Toy> arrtoys = new ArrayList<>();
-        ArrayList<SizeCost> arrsizes = Admin.FileToArr("sizes.txt", SizeCost.class);
-        ArrayList<MaterialCost> arrmaterials = Admin.FileToArr("materials.txt", MaterialCost.class);
+
+        ArrayList<?>[] result = readFilesParallel("sizes.txt", "materials.txt");
+        ArrayList<SizeCost> arrsizes = (ArrayList<SizeCost>) result[0];
+        ArrayList<MaterialCost> arrmaterials = (ArrayList<MaterialCost>) result[1];
 
         while(true) {
             exit = 0;
             System.out.println("Меню: \n\t1 - Админ \n\t2 - Пользователь \n\t0 - Выход из программы");
             k = Check.checkNumber(0, 2);
-
             switch (k) {
                 case 1:
                     while (true) {
@@ -46,14 +48,14 @@ public class Main {
                                     num = Check.checkNumber(1, 2);
                                     if (num == 2) break;
                                 }
-                                arrusers = admin.FileToArr("users.txt", User.class);
-                                arrtoys = admin.FileToArr("toys.txt", Toy.class);
+                                result = readFilesParallel("users.txt", "toys.txt");
+                                arrusers = (ArrayList<User>) result[0];
+                                arrtoys = (ArrayList<Toy>) result[1];
                                 System.out.println("Данные из файлов загружены.");
                                 break;
                             case 6:
                                 isSave = true;
-                                admin.ArrToFile(arrusers, "users.txt");
-                                admin.ArrToFile(arrtoys, "toys.txt");
+                                writeFilesParallel("users.txt", arrusers, "toys.txt", arrtoys);
                                 System.out.println("Данные успешно сохранены.");
                                 break;
                             case 0: exit = 1;
@@ -81,9 +83,7 @@ public class Main {
                                 user.showBasket(arrtoys, arrsizes, arrmaterials);
                                 break;
                             case 2:
-                                isSave = false;
-                                user.showBasketSort(arrtoys, arrsizes, arrmaterials);
-                                System.out.println("Корзина отсортирована по возрастанию цены.");
+                                basketSortParallel(user, arrtoys, arrsizes, arrmaterials);
                                 break;
                             case 3:
                                 isSave = false;
@@ -119,8 +119,7 @@ public class Main {
                         System.out.println("Данные НЕ сохранены. \n\t1. Сохранить и выйти \n\t2. Выйти");
                         num = Check.checkNumber(1, 2);
                         if (num == 1) {
-                            Admin.ArrToFile(arrusers, "users.txt");
-                            Admin.ArrToFile(arrtoys, "toys.txt");
+                            writeFilesParallel("users.txt", arrusers, "toys.txt", arrtoys);
                             System.out.println("Данные успешно сохранены.");
                         }
                     }
@@ -137,7 +136,6 @@ public class Main {
         arrusers.add(user);
         System.out.println("Пользователь зарегистирован.");
     }
-
     public static User getUserObject(ArrayList<User> arrusers, String str) {
         for (User item : arrusers) {
             if (str.equals(item.getName())) {
@@ -145,5 +143,58 @@ public class Main {
             }
         }
         return null;
+    }
+
+    public static <One, Two> ArrayList<?>[] readFilesParallel(String fileName1, String fileName2) {
+        ExecutorService executorService = Executors.newFixedThreadPool(2);
+
+        Future<ArrayList<One>> future1 = executorService.submit(new FileReader<>(fileName1));
+        Future<ArrayList<Two>> future2 = executorService.submit(new FileReader<>(fileName2));
+        executorService.shutdown();
+
+        try {
+            executorService.awaitTermination(1, TimeUnit.DAYS);
+            ArrayList<One> list1 = future1.get();
+            ArrayList<Two> list2 = future2.get();
+            ArrayList<?>[] resultList = new ArrayList[]{list1, list2};
+            return resultList;
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void writeFilesParallel(String file1, ArrayList<?> list1, String file2, ArrayList<?> list2) {
+        ExecutorService executorService = Executors.newFixedThreadPool(2);
+
+        executorService.submit(new FileWriter<>(file1, list1));
+        executorService.submit(new FileWriter<>(file2, list2));
+        executorService.shutdown();
+
+        try {
+            executorService.awaitTermination(1, TimeUnit.DAYS);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void basketSortParallel(User user, ArrayList<Toy> arrtoys, ArrayList<SizeCost> arrsizes, ArrayList<MaterialCost> arrmaterials) {
+        if(user.getBasketLength() == 0) {
+            System.out.println("\tкорзина пуста");
+            return;
+        }
+        ArrayList<Toy> localArrToys = arrtoys;
+        ArrayList<SizeCost> localArrSizes = arrsizes;
+        ArrayList<MaterialCost> localArrMaterials = arrmaterials;
+        Thread thread1 = new Thread(() -> user.showBasketSortIncrease(localArrToys, localArrSizes, localArrMaterials));
+        Thread thread2 = new Thread(() -> user.showBasketSortDecrease(localArrToys, localArrSizes, localArrMaterials));
+
+        thread1.start();
+        thread2.start();
+        try {
+            thread1.join();
+            thread2.join();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

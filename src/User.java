@@ -55,12 +55,16 @@ public class User extends Person implements Serializable {
     }
 
     public void showBasket(ArrayList<Toy> arrtoys, ArrayList<SizeCost> arrsizes, ArrayList<MaterialCost> arrmaterials) {
-        int i = 0;
         if(arrbasket.size() == 0) {
             System.out.println("\tкорзина пуста");
             return;
         }
-        for (BasketItem item : arrbasket) {
+        displayBasket(arrbasket, arrtoys, arrsizes, arrmaterials);
+        totalCost(arrtoys, arrsizes, arrmaterials);
+    }
+    public void displayBasket(ArrayList<BasketItem> arr, ArrayList<Toy> arrtoys, ArrayList<SizeCost> arrsizes, ArrayList<MaterialCost> arrmaterials) {
+        int i = 0;
+        for (BasketItem item : arr) {
             int id_size = item.getIdSize();
             int id_material = item.getIdMaterial();
 
@@ -71,7 +75,6 @@ public class User extends Person implements Serializable {
             double increase = arrsizes.get(id_size).getCost() * arrmaterials.get(id_material).getCost();
             System.out.println("\t" + i++ + ". " + name + ", " + arrsizes.get(id_size).getName() + ", " + arrmaterials.get(id_material).getName() + ", " + Math.round(cost*increase * 10.0)/10.0 + "$");
         }
-        totalCost(arrtoys, arrsizes, arrmaterials);
     }
     public int getIdToyByIdToyBasket(ArrayList<Toy> arrtoys, int idToyBasket) {
         try {
@@ -88,17 +91,31 @@ public class User extends Person implements Serializable {
         return -1;
     }
 
-    public void showBasketSort(ArrayList<Toy> arrtoys, ArrayList<SizeCost> arrsizes, ArrayList<MaterialCost> arrmaterials) {
-        arrbasket.sort((left, right) -> {
-            int costL = 0, costR = 0;
-            for (Toy item: arrtoys) {
-                if (left.getIdToy() == item.getId()) costL = item.getCost();
-                if (right.getIdToy() == item.getId()) costR = item.getCost();
-            }
-            double increaseL = arrsizes.get(left.getIdSize()).getCost() * arrmaterials.get(left.getIdMaterial()).getCost();
-            double increaseR = arrsizes.get(right.getIdSize()).getCost() * arrmaterials.get(right.getIdMaterial()).getCost();
-            return Double.compare(costL*increaseL, costR*increaseR);
-        });
+    public void showBasketSortIncrease(ArrayList<Toy> arrtoys, ArrayList<SizeCost> arrsizes, ArrayList<MaterialCost> arrmaterials) {
+        ArrayList<BasketItem> sortedBasket = new ArrayList<>(arrbasket);
+        sortedBasket.sort((left, right) -> basketSort(arrtoys, arrsizes, arrmaterials, left, right));
+        synchronized (this) {
+            System.out.println("По возрастанию цены:");
+            displayBasket(sortedBasket, arrtoys, arrsizes, arrmaterials);
+        }
+    }
+    public void showBasketSortDecrease(ArrayList<Toy> arrtoys, ArrayList<SizeCost> arrsizes, ArrayList<MaterialCost> arrmaterials) {
+        ArrayList<BasketItem> sortedBasket = new ArrayList<>(arrbasket);
+        sortedBasket.sort((left, right) -> basketSort(arrtoys, arrsizes, arrmaterials, right, left));
+        synchronized (this) {
+            System.out.println("По убыванию цены:");
+            displayBasket(sortedBasket, arrtoys, arrsizes, arrmaterials);
+        }
+    }
+    public int basketSort(ArrayList<Toy> arrtoys, ArrayList<SizeCost> arrsizes, ArrayList<MaterialCost> arrmaterials, BasketItem left, BasketItem right) {
+        int costL = 0, costR = 0;
+        for (Toy item: arrtoys) {
+            if (left.getIdToy() == item.getId()) costL = item.getCost();
+            if (right.getIdToy() == item.getId()) costR = item.getCost();
+        }
+        double increaseL = arrsizes.get(left.getIdSize()).getCost() * arrmaterials.get(left.getIdMaterial()).getCost();
+        double increaseR = arrsizes.get(right.getIdSize()).getCost() * arrmaterials.get(right.getIdMaterial()).getCost();
+        return Double.compare(costL*increaseL, costR*increaseR);
     }
 
     public boolean checkBasketName(int id_toy) {

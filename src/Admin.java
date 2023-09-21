@@ -62,29 +62,4 @@ public class Admin extends Person {
             System.out.println("Игрушка удалена из общего списка и корзин пользователей.");
         }
     }
-
-    public static <T> ArrayList<T> FileToArr(String file, Class<T> cl) {
-        ArrayList<T> newarr = new ArrayList<>();
-        try {
-            FileInputStream fis = new FileInputStream(file);
-            ObjectInputStream ois = new ObjectInputStream(fis);
-            newarr = (ArrayList<T>) ois.readObject();
-            ois.close();
-            fis.close();
-        } catch (IOException | ClassNotFoundException e) {
-            System.err.println("Ошибка: " + e.getMessage());
-        }
-        return newarr;
-    }
-    public static <T> void ArrToFile(ArrayList<T> arr, String file) {
-        try {
-            FileOutputStream fos = new FileOutputStream(file);
-            ObjectOutputStream oos = new ObjectOutputStream(fos);
-            oos.writeObject(arr);
-            oos.close();
-            fos.close();
-        } catch (IOException e) {
-            System.err.println("Ошибка: " + e.getMessage());
-        }
-    }
 }
