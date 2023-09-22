@@ -1,4 +1,6 @@
+import java.util.ArrayList;
 import java.util.InputMismatchException;
+import java.util.Optional;
 import java.util.Scanner;
 
 public class Check {
@@ -39,6 +41,27 @@ public class Check {
         return a;
     }
 
+    public static int checkIntLimit() {
+        Scanner scan = new Scanner(System.in);
+        int a;
+        while (true) {
+            try {
+                a = scan.nextInt();
+                scan.nextLine();
+                if (a < 1) {
+                    throw new MyException("Вы ввели недопустимый лимит.");
+                }
+                break;
+            } catch (InputMismatchException e) {
+                System.err.println("Недопустимое значение.");
+                scan.next();
+            } catch (MyException e) {
+                System.err.println(e.getMessage());
+            }
+        }
+        return a;
+    }
+
     public static String checkString() {
         Scanner scan = new Scanner(System.in);
         String b;
@@ -55,5 +78,25 @@ public class Check {
             }
         }
         return b;
+    }
+
+    public static String checkStringSize(ArrayList<SizeCost> arrsizes) {
+        Scanner scan = new Scanner(System.in);
+        String b;
+        while (true) {
+            try {
+                b = scan.nextLine();
+                String[] words = b.split(" ");
+                if (words.length > 1) {
+                    throw new MyException("Вы ввели больше одного слова.");
+                }
+                for (SizeCost item : arrsizes) {
+                    if (words[0].equals(item.getName())) return words[0];
+                }
+                throw new MyException("Такого размера нет.");
+            } catch (MyException e) {
+                System.err.println(e.getMessage());
+            }
+        }
     }
 }
